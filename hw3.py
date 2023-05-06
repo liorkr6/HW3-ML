@@ -1,44 +1,44 @@
 import numpy as np
 
+
 class conditional_independence():
 
     def __init__(self):
-
         # You need to fill the None value with *valid* probabilities
         self.X = {0: 0.3, 1: 0.7}  # P(X=x)
         self.Y = {0: 0.3, 1: 0.7}  # P(Y=y)
         self.C = {0: 0.5, 1: 0.5}  # P(C=c)
 
         self.X_Y = {
-            (0, 0): None,
-            (0, 1): None,
-            (1, 0): None,
-            (1, 1): None
+            (0, 0): round(self.X[0] * self.Y[0], 1),
+            (0, 1): round(self.X[0] * self.Y[1], 1),
+            (1, 0): round(self.X[1] * self.Y[0], 1),
+            (1, 1): round(self.X[1] * self.Y[1], 1)
         }  # P(X=x, Y=y)
 
         self.X_C = {
-            (0, 0): None,
-            (0, 1): None,
-            (1, 0): None,
-            (1, 1): None
+            (0, 0): round(self.X[0] * self.C[0], 1),
+            (0, 1): round(self.X[0] * self.C[1], 1),
+            (1, 0): round(self.X[1] * self.C[0], 1),
+            (1, 1): round(self.X[1] * self.C[1], 1)
         }  # P(X=x, C=y)
 
         self.Y_C = {
-            (0, 0): None,
-            (0, 1): None,
-            (1, 0): None,
-            (1, 1): None
+            (0, 0): round(self.Y[0] * self.C[0], 1),
+            (0, 1): round(self.Y[0] * self.C[1], 1),
+            (1, 0): round(self.Y[1] * self.C[0], 1),
+            (1, 1): round(self.Y[1] * self.C[1], 1)
         }  # P(Y=y, C=c)
 
         self.X_Y_C = {
-            (0, 0, 0): None,
-            (0, 0, 1): None,
-            (0, 1, 0): None,
-            (0, 1, 1): None,
-            (1, 0, 0): None,
-            (1, 0, 1): None,
-            (1, 1, 0): None,
-            (1, 1, 1): None,
+            (0, 0, 0): self.X[0] * self.Y[0] * self.C[0],
+            (0, 0, 1): self.X[0] * self.Y[0] * self.C[1],
+            (0, 1, 0): self.X[0] * self.Y[1] * self.C[0],
+            (0, 1, 1): self.X[0] * self.Y[1] * self.C[1],
+            (1, 0, 0): self.X[1] * self.Y[0] * self.C[0],
+            (1, 0, 1): self.X[1] * self.Y[0] * self.C[1],
+            (1, 1, 0): self.X[1] * self.Y[1] * self.C[0],
+            (1, 1, 1): self.X[1] * self.Y[1] * self.C[1]
         }  # P(X=x, Y=y, C=c)
 
     def is_X_Y_dependent(self):
@@ -48,13 +48,16 @@ class conditional_independence():
         X = self.X
         Y = self.Y
         X_Y = self.X_Y
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+
+        x_probabilities, y_probabilities = np.array(list(X.values())), np.array(list(Y.values()))
+        multiplications_x_y = np.array(np.concatenate(np.outer(x_probabilities, y_probabilities)))
+        x_y_probabilities = np.array(list(X_Y.values()))
+        print(x_y_probabilities, multiplications_x_y)
+        comparison = np.isclose(x_y_probabilities, multiplications_x_y)
+        if comparison.all():
+            return False
+        else:
+            return True
 
     def is_X_Y_given_C_independent(self):
         """
@@ -66,13 +69,18 @@ class conditional_independence():
         X_C = self.X_C
         Y_C = self.Y_C
         X_Y_C = self.X_Y_C
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
+        #
+        # x_c = np.array(list(X_C.values())*2)
+        # y_c = np.array(list(Y_C.values())*2)
+        # x_y_c_multiplie = x_c * y_c * 2
+        # x_y_c_probs = np.array(list(X_Y_C.values()))
+        # independent = np.isclose(x_y_c_probs , x_y_c_multiplie)
+        # if independent.any() == False:
+        #     return False
+        #
+        #
+        # return True
         pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
 
 def poisson_log_pmf(k, rate):
     """
@@ -91,6 +99,7 @@ def poisson_log_pmf(k, rate):
     ###########################################################################
     return log_p
 
+
 def get_poisson_log_likelihoods(samples, rates):
     """
     samples: set of univariate discrete observations
@@ -108,6 +117,7 @@ def get_poisson_log_likelihoods(samples, rates):
     ###########################################################################
     return likelihoods
 
+
 def possion_iterative_mle(samples, rates):
     """
     samples: set of univariate discrete observations
@@ -116,7 +126,7 @@ def possion_iterative_mle(samples, rates):
     return: the rate that maximizes the likelihood 
     """
     rate = 0.0
-    likelihoods = get_poisson_log_likelihoods(samples, rates) # might help
+    likelihoods = get_poisson_log_likelihoods(samples, rates)  # might help
     ###########################################################################
     # TODO: Implement the function.                                           #
     ###########################################################################
@@ -125,6 +135,7 @@ def possion_iterative_mle(samples, rates):
     #                             END OF YOUR CODE                            #
     ###########################################################################
     return rate
+
 
 def possion_analytic_mle(samples):
     """
@@ -141,6 +152,7 @@ def possion_analytic_mle(samples):
     #                             END OF YOUR CODE                            #
     ###########################################################################
     return mean
+
 
 def normal_pdf(x, mean, std):
     """
@@ -163,6 +175,7 @@ def normal_pdf(x, mean, std):
     ###########################################################################
     return p
 
+
 class NaiveNormalClassDistribution():
     def __init__(self, dataset, class_value):
         """
@@ -180,7 +193,7 @@ class NaiveNormalClassDistribution():
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
-    
+
     def get_prior(self):
         """
         Returns the prior porbability of the class according to the dataset distribution.
@@ -194,7 +207,7 @@ class NaiveNormalClassDistribution():
         #                             END OF YOUR CODE                            #
         ###########################################################################
         return prior
-    
+
     def get_instance_likelihood(self, x):
         """
         Returns the likelihhod porbability of the instance under the class according to the dataset distribution.
@@ -208,7 +221,7 @@ class NaiveNormalClassDistribution():
         #                             END OF YOUR CODE                            #
         ###########################################################################
         return likelihood
-    
+
     def get_instance_posterior(self, x):
         """
         Returns the posterior porbability of the instance under the class according to the dataset distribution.
@@ -224,8 +237,9 @@ class NaiveNormalClassDistribution():
         ###########################################################################
         return posterior
 
+
 class MAPClassifier():
-    def __init__(self, ccd0 , ccd1):
+    def __init__(self, ccd0, ccd1):
         """
         A Maximum a posteriori classifier. 
         This class will hold 2 class distributions. 
@@ -246,7 +260,7 @@ class MAPClassifier():
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
-    
+
     def predict(self, x):
         """
         Predicts the instance class using the 2 distribution objects given in the object constructor.
@@ -265,6 +279,7 @@ class MAPClassifier():
         #                             END OF YOUR CODE                            #
         ###########################################################################
         return pred
+
 
 def compute_accuracy(test_set, map_classifier):
     """
@@ -287,6 +302,7 @@ def compute_accuracy(test_set, map_classifier):
     ###########################################################################
     return acc
 
+
 def multi_normal_pdf(x, mean, cov):
     """
     Calculate multi variable normal desnity function for a given x, mean and covarince matrix.
@@ -308,6 +324,7 @@ def multi_normal_pdf(x, mean, cov):
     ###########################################################################
     return pdf
 
+
 class MultiNormalClassDistribution():
 
     def __init__(self, dataset, class_value):
@@ -326,7 +343,7 @@ class MultiNormalClassDistribution():
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
-        
+
     def get_prior(self):
         """
         Returns the prior porbability of the class according to the dataset distribution.
@@ -340,7 +357,7 @@ class MultiNormalClassDistribution():
         #                             END OF YOUR CODE                            #
         ###########################################################################
         return prior
-    
+
     def get_instance_likelihood(self, x):
         """
         Returns the likelihood of the instance under the class according to the dataset distribution.
@@ -354,7 +371,7 @@ class MultiNormalClassDistribution():
         #                             END OF YOUR CODE                            #
         ###########################################################################
         return likelihood
-    
+
     def get_instance_posterior(self, x):
         """
         Returns the posterior porbability of the instance under the class according to the dataset distribution.
@@ -370,8 +387,9 @@ class MultiNormalClassDistribution():
         ###########################################################################
         return posterior
 
+
 class MaxPrior():
-    def __init__(self, ccd0 , ccd1):
+    def __init__(self, ccd0, ccd1):
         """
         A Maximum prior classifier. 
         This class will hold 2 class distributions, one for class 0 and one for class 1, and will predicit an instance
@@ -388,7 +406,7 @@ class MaxPrior():
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
-    
+
     def predict(self, x):
         """
         Predicts the instance class using the 2 distribution objects given in the object constructor.
@@ -408,8 +426,9 @@ class MaxPrior():
         ###########################################################################
         return pred
 
+
 class MaxLikelihood():
-    def __init__(self, ccd0 , ccd1):
+    def __init__(self, ccd0, ccd1):
         """
         A Maximum Likelihood classifier. 
         This class will hold 2 class distributions, one for class 0 and one for class 1, and will predicit an instance
@@ -426,7 +445,7 @@ class MaxLikelihood():
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
-    
+
     def predict(self, x):
         """
         Predicts the instance class using the 2 distribution objects given in the object constructor.
@@ -446,7 +465,9 @@ class MaxLikelihood():
         ###########################################################################
         return pred
 
-EPSILLON = 1e-6 # if a certain value only occurs in the test set, the probability for that value will be EPSILLON.
+
+EPSILLON = 1e-6  # if a certain value only occurs in the test set, the probability for that value will be EPSILLON.
+
 
 class DiscreteNBClassDistribution():
     def __init__(self, dataset, class_value):
@@ -465,7 +486,7 @@ class DiscreteNBClassDistribution():
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
-    
+
     def get_prior(self):
         """
         Returns the prior porbability of the class 
@@ -480,7 +501,7 @@ class DiscreteNBClassDistribution():
         #                             END OF YOUR CODE                            #
         ###########################################################################
         return prior
-    
+
     def get_instance_likelihood(self, x):
         """
         Returns the likelihood of the instance under 
@@ -495,7 +516,7 @@ class DiscreteNBClassDistribution():
         #                             END OF YOUR CODE                            #
         ###########################################################################
         return likelihood
-        
+
     def get_instance_posterior(self, x):
         """
         Returns the posterior porbability of the instance 
@@ -514,7 +535,7 @@ class DiscreteNBClassDistribution():
 
 
 class MAPClassifier_DNB():
-    def __init__(self, ccd0 , ccd1):
+    def __init__(self, ccd0, ccd1):
         """
         A Maximum a posteriori classifier. 
         This class will hold 2 class distributions, one for class 0 and one for class 1, and will predict an instance
@@ -569,5 +590,3 @@ class MAPClassifier_DNB():
         #                             END OF YOUR CODE                            #
         ###########################################################################
         return acc
-
-
