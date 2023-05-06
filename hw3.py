@@ -89,14 +89,7 @@ def poisson_log_pmf(k, rate):
 
     return the log pmf value for instance k given the rate
     """
-    log_p = None
-    ###########################################################################
-    # TODO: Implement the function.                                           #
-    ###########################################################################
-    pass
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
+    log_p = np.log(np.power(rate,k)*(np.power(np.e,-rate))/(np.math.factorial(k)))
     return log_p
 
 
@@ -107,14 +100,14 @@ def get_poisson_log_likelihoods(samples, rates):
 
     return: 1d numpy array, where each value represent that log-likelihood value of rates[i]
     """
-    likelihoods = None
-    ###########################################################################
-    # TODO: Implement the function.                                           #
-    ###########################################################################
-    pass
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
+    likelihoods = []
+
+    for i in range (len(rates)):
+        samples_sum = 0
+        for j in range (len(samples)):
+            samples_sum += poisson_log_pmf(samples[j], rates[i])
+        likelihoods.append(samples_sum)
+
     return likelihoods
 
 
@@ -127,13 +120,11 @@ def possion_iterative_mle(samples, rates):
     """
     rate = 0.0
     likelihoods = get_poisson_log_likelihoods(samples, rates)  # might help
-    ###########################################################################
-    # TODO: Implement the function.                                           #
-    ###########################################################################
-    pass
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
+    max_likelihood = likelihoods[0]
+    for i in range (len(rates)):
+        if likelihoods[i] > max_likelihood:
+            max_likelihood = likelihoods[i]
+            rate = rates[i]
     return rate
 
 
@@ -143,20 +134,13 @@ def possion_analytic_mle(samples):
 
     return: the rate that maximizes the likelihood
     """
-    mean = None
-    ###########################################################################
-    # TODO: Implement the function.                                           #
-    ###########################################################################
-    pass
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
+    mean = np.mean(samples)
     return mean
 
 
 def normal_pdf(x, mean, std):
     """
-    Calculate normal desnity function for a given x, mean and standrad deviation.
+    Calculate normal density function for a given x, mean and standard deviation.
  
     Input:
     - x: A value we want to compute the distribution for.
@@ -165,15 +149,11 @@ def normal_pdf(x, mean, std):
  
     Returns the normal distribution pdf according to the given mean and std for the given x.    
     """
-    p = None
-    ###########################################################################
-    # TODO: Implement the function.                                           #
-    ###########################################################################
-    pass
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
-    return p
+
+    # var = float(std)**2
+    # denom = (2*np.math.pi*var)**.5
+    # num = np.math.exp(-(float(x)-float(mean))**2/(2*var))
+    return (np.pi*std) * np.exp(-0.5*((x-mean)/std)**2)
 
 
 class NaiveNormalClassDistribution():
@@ -186,55 +166,31 @@ class NaiveNormalClassDistribution():
         - dataset: The dataset as a 2d numpy array, assuming the class label is the last column
         - class_value : The class to calculate the parameters for.
         """
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+        self.dataset = dataset
+        self.samples = dataset[dataset[:,-1]==class_value][:,0:2]
+        self.mean = np.mean(self.samples, axis=0)
+        self.std = np.std(self.samples,axis=0)
 
     def get_prior(self):
         """
-        Returns the prior porbability of the class according to the dataset distribution.
+        Returns the prior probability of the class according to the dataset distribution.
         """
-        prior = None
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+        prior = self.samples.shape[0]/self.dataset.shape[0]
         return prior
 
     def get_instance_likelihood(self, x):
         """
-        Returns the likelihhod porbability of the instance under the class according to the dataset distribution.
+        Returns the likelihood probability of the instance under the class according to the dataset distribution.
         """
-        likelihood = None
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+        likelihood = np.prod([normal_pdf(feature, self.mean, self.std) for feature in x])
         return likelihood
 
     def get_instance_posterior(self, x):
         """
-        Returns the posterior porbability of the instance under the class according to the dataset distribution.
+        Returns the posterior probability of the instance under the class according to the dataset distribution.
         * Ignoring p(x)
         """
-        posterior = None
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+        posterior = self.get_prior() * self.get_instance_likelihood(x)
         return posterior
 
 
@@ -253,13 +209,8 @@ class MAPClassifier():
             - ccd1 : An object contating the relevant parameters and methods 
                      for the distribution of class 1.
         """
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+        self.ccd0 = ccd0
+        self.ccd1 = ccd1
 
     def predict(self, x):
         """
@@ -270,14 +221,7 @@ class MAPClassifier():
         Output
             - 0 if the posterior probability of class 0 is higher and 1 otherwise.
         """
-        pred = None
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+        pred = 0 if self.ccd0.get_instance_posterior(x) > self.ccd1.get_instance_posterior(x) else 1
         return pred
 
 
@@ -287,20 +231,19 @@ def compute_accuracy(test_set, map_classifier):
     
     Input
         - test_set: The test_set for which to compute the accuracy (Numpy array). where the class label is the last column
-        - map_classifier : A MAPClassifier object capable of prediciting the class for each instance in the testset.
+        - map_classifier : A MAPClassifier object capable of predicting the class for each instance in the testset.
         
     Ouput
         - Accuracy = #Correctly Classified / test_set size
     """
-    acc = None
-    ###########################################################################
-    # TODO: Implement the function.                                           #
-    ###########################################################################
-    pass
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
-    return acc
+    predictions = [map_classifier.predict(test_set[i,:]) for i in range(test_set.shape[0])]
+    correct_predictions = 0
+    for (idx, pred) in enumerate(predictions):
+        if pred == test_set[idx, -1]:
+            correct_predictions += 1
+
+    return correct_predictions/test_set.shape[0]
+
 
 
 def multi_normal_pdf(x, mean, cov):
