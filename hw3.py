@@ -69,17 +69,17 @@ class conditional_independence():
         X_C = self.X_C
         Y_C = self.Y_C
         X_Y_C = self.X_Y_C
-        #
-        # x_c = np.array(list(X_C.values())*2)
-        # y_c = np.array(list(Y_C.values())*2)
-        # x_y_c_multiplie = x_c * y_c * 2
-        # x_y_c_probs = np.array(list(X_Y_C.values()))
-        # independent = np.isclose(x_y_c_probs , x_y_c_multiplie)
-        # if independent.any() == False:
-        #     return False
-        #
-        #
-        # return True
+
+        x_c_probabilities = np.array(list(X_C.values())*2)
+        y_c_probabilities = np.array(list(Y_C.values())*2)
+        x_y_c_multiplication = x_c_probabilities * y_c_probabilities
+        x_y_c_probabilities = np.array(list(X_Y_C.values()))
+        independent = np.isclose(x_y_c_probabilities , x_y_c_multiplication)
+        if independent.any() == False:
+            return False
+        
+        
+        return True
         pass
 
 def poisson_log_pmf(k, rate):
