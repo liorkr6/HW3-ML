@@ -428,7 +428,7 @@ class MAPClassifier_DNB():
         Output
             - 0 if the posterior probability of class 0 is higher and 1 otherwise.
         """
-        pred = 0 if self.ccd0.get_instance_likelihood(x) > self.ccd1.get_instance_likelihood(x) else 1
+        pred = 0 if self.ccd0.get_instance_posterior(x) > self.ccd1.get_instance_posterior(x) else 1
         return pred
 
     def compute_accuracy(self, test_set):
@@ -446,6 +446,4 @@ class MAPClassifier_DNB():
             if pred == test_set[idx, -1]:
                 correct_predictions += 1
 
-        print(correct_predictions)
-        print(test_set.shape[0])
         return correct_predictions/test_set.shape[0]
